@@ -1,6 +1,7 @@
 package com.yl.rvhelper;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.view.View;
 
 /**
@@ -10,13 +11,25 @@ import android.view.View;
 
 public class ViewHolder extends RecyclerView.ViewHolder {
     private View itemView;
+    private SparseArray<View> views;
 
-    public ViewHolder(View itemView) {
+    ViewHolder(View itemView) {
         super(itemView);
         this.itemView = itemView;
+        views = new SparseArray<>();
     }
 
     public View getItemView() {
         return itemView;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <V extends View> V findViewById(int id) {
+        View view = views.get(id);
+        if (view == null) {
+            view = itemView.findViewById(id);
+            views.put(id, view);
+        }
+        return (V) view;
     }
 }

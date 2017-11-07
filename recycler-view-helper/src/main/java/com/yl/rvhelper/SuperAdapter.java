@@ -31,11 +31,11 @@ public abstract class SuperAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
         this.itemLayoutId = itemLayoutId;
     }
 
-    protected abstract void bindItemLayout(View itemView, T data);
+    protected abstract void onConvertItemView(ViewHolder holder, T data);
 
-    protected abstract void bindHeaderLayout(View headerView);
+    protected abstract void onConvertHeaderView(ViewHolder holder);
 
-    protected abstract void bindFooterLayout(View footerView);
+    protected abstract void onConvertFooterView(ViewHolder holder);
 
     public Context getContext() {
         return context;
@@ -77,6 +77,35 @@ public abstract class SuperAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     }
 
     @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        switch (getItemViewType(position)) {
+            case TYPE_HEADER:
+                onConvertHeaderView(holder);
+                break;
+            case TYPE_FOOTER:
+                onConvertFooterView(holder);
+                break;
+            case TYPE_NORMAL:
+                int layoutPos = holder.getLayoutPosition();
+                final int realPos = headerLayoutId == -1 ? layoutPos : layoutPos - 1;
+                onConvertItemView(holder, dataList.get(realPos));
+                break;
+            default:
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        if (headerLayoutId != -1 && footerLayoutId != -1) {
+            return dataList.size() + 2;
+        } else if (headerLayoutId != -1 || footerLayoutId != -1) {
+            return dataList.size() + 1;
+        } else {
+            return dataList.size();
+        }
+    }
+
+    @Override
     // 重写以适配GridLayoutManager
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
@@ -105,35 +134,6 @@ public abstract class SuperAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
                         (StaggeredGridLayoutManager.LayoutParams) params;
                 layoutParams.setFullSpan(true);
             }
-        }
-    }
-
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        switch (getItemViewType(position)) {
-            case TYPE_HEADER:
-                bindHeaderLayout(holder.getItemView());
-                break;
-            case TYPE_FOOTER:
-                bindFooterLayout(holder.getItemView());
-                break;
-            case TYPE_NORMAL:
-                int layoutPos = holder.getLayoutPosition();
-                final int realPos = headerLayoutId == -1 ? layoutPos : layoutPos - 1;
-                bindItemLayout(holder.getItemView(), dataList.get(realPos));
-                break;
-            default:
-        }
-    }
-
-    @Override
-    public int getItemCount() {
-        if (headerLayoutId != -1 && footerLayoutId != -1) {
-            return dataList.size() + 2;
-        } else if (headerLayoutId != -1 || footerLayoutId != -1) {
-            return dataList.size() + 1;
-        } else {
-            return dataList.size();
         }
     }
 }

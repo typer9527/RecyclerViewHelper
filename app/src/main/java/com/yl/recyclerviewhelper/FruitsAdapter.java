@@ -6,6 +6,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yl.rvhelper.SuperAdapter;
+import com.yl.rvhelper.ViewHolder;
 
 import java.util.List;
 
@@ -21,12 +22,12 @@ class FruitsAdapter extends SuperAdapter<Fruit> {
     }
 
     @Override
-    protected void bindItemLayout(View itemView, final Fruit data) {
-        ImageView fruitImage = (ImageView) itemView.findViewById(R.id.fruit_image);
-        TextView fruitName = (TextView) itemView.findViewById(R.id.fruit_name);
+    protected void onConvertItemView(ViewHolder holder, final Fruit data) {
+        ImageView fruitImage = holder.findViewById(R.id.fruit_image);
+        TextView fruitName = holder.findViewById(R.id.fruit_name);
         fruitImage.setImageResource(data.getImageId());
         fruitName.setText(data.getName());
-        itemView.setOnClickListener(new View.OnClickListener() {
+        holder.getItemView().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getContext(), data.getName(),
@@ -36,15 +37,15 @@ class FruitsAdapter extends SuperAdapter<Fruit> {
     }
 
     @Override
-    protected void bindHeaderLayout(View headerView) {
-        TextView headerTitle = (TextView) headerView.findViewById(R.id.title_text);
+    protected void onConvertHeaderView(ViewHolder holder) {
+        TextView headerTitle = holder.findViewById(R.id.title_text);
         headerTitle.setText("头布局");
     }
 
     @Override
-    protected void bindFooterLayout(View footerView) {
-        TextView footerTitle = (TextView) footerView.findViewById(R.id.title_text);
-        TextView loadText = (TextView) footerView.findViewById(R.id.load_text);
+    protected void onConvertFooterView(ViewHolder holder) {
+        TextView footerTitle = holder.findViewById(R.id.title_text);
+        TextView loadText = holder.findViewById(R.id.load_text);
         footerTitle.setText("脚布局");
         loadText.setText("正在加载...");
     }
