@@ -1,4 +1,4 @@
-package com.yl.recyclerviewhelper;
+package com.yl.rvhelper;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

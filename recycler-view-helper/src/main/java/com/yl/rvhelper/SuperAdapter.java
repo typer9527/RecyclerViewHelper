@@ -1,7 +1,9 @@
-package com.yl.recyclerviewhelper;
+package com.yl.rvhelper;
 
 import android.content.Context;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +15,7 @@ import java.util.List;
  * Created by Luke on 2017/10/20.
  */
 
-abstract class SuperAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
+public abstract class SuperAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_NORMAL = 1;
     private static final int TYPE_FOOTER = 2;
@@ -21,25 +23,21 @@ abstract class SuperAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     private int headerLayoutId, footerLayoutId, itemLayoutId;
     private Context context;
 
-    SuperAdapter(List<T> dataList, int itemLayoutId,
-                 int headerLayoutId, int footerLayoutId) {
+    protected SuperAdapter(List<T> dataList, int itemLayoutId,
+                           int headerLayoutId, int footerLayoutId) {
         this.dataList = dataList;
         this.headerLayoutId = headerLayoutId;
         this.footerLayoutId = footerLayoutId;
         this.itemLayoutId = itemLayoutId;
     }
 
-    abstract void bindItemLayout(View itemView, T data);
+    protected abstract void bindItemLayout(View itemView, T data);
 
-    abstract void bindHeaderLayout(View headerView);
+    protected abstract void bindHeaderLayout(View headerView);
 
-    abstract void bindFooterLayout(View footerView);
+    protected abstract void bindFooterLayout(View footerView);
 
-    T getData(int position) {
-        return dataList.get(position);
-    }
-
-    Context getContext() {
+    public Context getContext() {
         return context;
     }
 
@@ -76,6 +74,38 @@ abstract class SuperAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
                         .inflate(itemLayoutId, parent, false);
         }
         return new ViewHolder(view);
+    }
+
+    @Override
+    // 重写以适配GridLayoutManager
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+        if (layoutManager instanceof GridLayoutManager) {
+            final GridLayoutManager manager = (GridLayoutManager) layoutManager;
+            manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    int viewType = getItemViewType(position);
+                    return viewType == TYPE_HEADER || viewType ==
+                            TYPE_FOOTER ? manager.getSpanCount() : 1;
+                }
+            });
+        }
+    }
+
+    @Override
+    // 重写以适配StaggeredGridLayoutManager
+    public void onViewAttachedToWindow(ViewHolder holder) {
+        int viewType = getItemViewType(holder.getLayoutPosition());
+        if (viewType == TYPE_HEADER || viewType == TYPE_FOOTER) {
+            ViewGroup.LayoutParams params = holder.getItemView().getLayoutParams();
+            if (params != null && params instanceof
+                    StaggeredGridLayoutManager.LayoutParams) {
+                StaggeredGridLayoutManager.LayoutParams layoutParams =
+                        (StaggeredGridLayoutManager.LayoutParams) params;
+                layoutParams.setFullSpan(true);
+            }
+        }
     }
 
     @Override
